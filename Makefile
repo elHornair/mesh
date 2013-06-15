@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I.
+CFLAGS = -I. -lpthread
 DEPS = include/server.h
 SRCDIR = src
 OBJ = $(SRCDIR)/main.o $(SRCDIR)/server.o

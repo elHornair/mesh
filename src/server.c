@@ -59,7 +59,7 @@ int wait_for_message(int sockfd) {
 
     // receive message
     recv(sockfd, message_from_client, msg_length, 0);
-    printf("Nachricht erhalten: %s", message_from_client);
+    printf("Nachricht erhalten von #%d: %s", sockfd, message_from_client);
 
     // ping back
     char *msg = "Thx client, received message!\n";
