@@ -1,11 +1,7 @@
 CC = gcc
 CFLAGS = -I. -lpthread
-DEPS = include/node.h
 SRCDIR = src
-OBJ = $(SRCDIR)/main.o $(SRCDIR)/node.o
-
-%.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+OBJ = $(SRCDIR)/main.o $(SRCDIR)/node.o $(SRCDIR)/worker.o
 
 mesh: $(OBJ)
 	gcc -o $@ $^ $(CFLAGS)

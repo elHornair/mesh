@@ -1,0 +1,1 @@
+void *worker_init(void *sockfd_ptr);
