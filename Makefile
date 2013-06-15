@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -I. -lpthread
-DEPS = include/server.h
+DEPS = include/node.h
 SRCDIR = src
-OBJ = $(SRCDIR)/main.o $(SRCDIR)/server.o
+OBJ = $(SRCDIR)/main.o $(SRCDIR)/node.o
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
