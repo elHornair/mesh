@@ -12,7 +12,7 @@ int create_node(int port) {
     int sockfd;
     struct sockaddr_in serv_addr;
 
-    // socket erstellen
+    // create
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd < 0){
@@ -36,7 +36,7 @@ int create_node(int port) {
 }
 
 // connect a connection from another node to this one by accepting connection attempts
-int connect_node(int sockfd) {
+int wait_for_connection(int sockfd) {
     int clilen, newsockfd;
     struct sockaddr_in cli_addr;
 
@@ -50,4 +50,18 @@ int connect_node(int sockfd) {
 	}
 
 	return newsockfd;
+}
+
+// wait for a message
+int wait_for_message(int sockfd) {
+    int msg_length = 99;
+    char message_from_client[msg_length];
+
+    // receive message
+    recv(sockfd, message_from_client, msg_length, 0);
+    printf("Nachricht erhalten: %s", message_from_client);
+
+    // ping back
+    char *msg = "Thx client, received message!\n";
+    send(sockfd, msg, strlen(msg), 0);
 }
