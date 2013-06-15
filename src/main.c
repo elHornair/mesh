@@ -5,10 +5,18 @@
 
 #define NUM_WORKERS 5
 
-// TODO: get port from command line argument
 int main(int argc, char *argv[]) {
-    int sockfd = create_node(3004);
+    int port = 3333;
     int thread_counter = 0;
+    int sockfd;
+
+    // parse options
+    if (argc > 1) {
+        port = atoi(argv[1]);
+    }
+
+    // set up this node
+    sockfd = create_node(port);
     pthread_t workers[NUM_WORKERS];
 
     while (1) {
