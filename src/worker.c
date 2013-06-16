@@ -16,14 +16,14 @@ void add_neighbour(struct neighbour *neighbour_to_add) {
     // loop through existing neighbours
     LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
         if (neighbour_to_add->port == neighbour_item->port) {
-            printf("Nachbar mit IP %lu und Port %d ist schon registriert.\n", neighbour_to_add->ip, neighbour_to_add->port);
+            printf("Nachbar mit IP %lu und Port %d ist schon registriert\n", neighbour_to_add->ip, neighbour_to_add->port);
             already_in_list = 1;
         }
     }
 
     // add new neighbour
     if (!already_in_list) {
-        printf("Nachbar mit Port %d hinzugefügt.\n", neighbour_to_add->port);
+        printf("Nachbar mit Port %d hinzugefügt\n", neighbour_to_add->port);
         LIST_INSERT_HEAD(&neighbour_head, neighbour_to_add, entries);
     }
 
