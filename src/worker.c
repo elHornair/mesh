@@ -1,9 +1,28 @@
 #include<stdio.h>
 #include<include/util.h>
 
+// process a message
+int process_package(package *current_package) {
+    switch(current_package->type){
+        case 'C':
+            dbg("Datenpaket erhalten");
+            // TODO: handle
+            break;
+        case 'O':
+            dbg("OK-Paket erhalten");
+            // TODO: handle
+            break;
+        case 'N':
+            dbg("Verbindungspaket erhalten");
+            // TODO: handle
+            break;
+        default:
+            break;
+    }
+}
+
 // parse a message
 int parse_message(int sockfd) {
-    char dbg_str[80];
     package current_package;
     FILE *read_stream;
 
@@ -20,11 +39,11 @@ int parse_message(int sockfd) {
         error("ERROR, Ungültiges Packet erhalten.");
     }
 
-    sprintf(dbg_str, "Received package with type %c", current_package.type);
-    dbg(dbg_str);
-
     // close stream
     fclose(read_stream);
+
+    // process package
+    process_package(&current_package);
 }
 
 void *worker_init(void *sockfd_ptr)

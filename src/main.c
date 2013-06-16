@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
     // set up this node
     sockfd = create_node(port);
-    dbg("erstellt");
+    dbg("Erstellt");
 
     // TODO: refactor so it reuses the threads
     while (1) {
