@@ -1,23 +1,50 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
+#include<pthread.h>
 #include<include/util.h>
 
-void add_neighbour(neighbour *my_neighbour) {
-    printf("The port is: %d\n", my_neighbour->port);
+extern pthread_mutex_t mutex_neighbours;
+
+void add_neighbour(struct neighbour *neighbour_to_add) {
+    struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
+    int already_in_list = 0;
+
+    // lock neighbours list
+    pthread_mutex_lock(&mutex_neighbours);
+
+    // loop through existing neighbours
+    LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
+        if (neighbour_to_add->port == neighbour_item->port) {
+            printf("Nachbar mit IP %lu und Port %d ist schon registriert.\n", neighbour_to_add->ip, neighbour_to_add->port);
+            already_in_list = 1;
+        }
+    }
+
+    // add new neighbour
+    if (!already_in_list) {
+        printf("Nachbar mit Port %d hinzugefügt.\n", neighbour_to_add->port);
+        LIST_INSERT_HEAD(&neighbour_head, neighbour_to_add, entries);
+    }
+
+    // unlock neighbours list
+    pthread_mutex_unlock(&mutex_neighbours);
 }
 
 int process_connection_package(package *my_package) {
     int ip_num;
     int port_num;
-    neighbour new_neighbour;
+    struct neighbour *new_neighbour = malloc(sizeof(struct neighbour));
 
-    memcpy(&ip_num, &(my_package->message[3]), 1);
+    memcpy(&ip_num, &(my_package->message[3]), 1);// not sure if everything's correct here
     memcpy(&port_num, &(my_package->message[4]), 2);
 
-    new_neighbour.ip = ntohs(ip_num);
-    new_neighbour.port = ntohs(port_num);
+    new_neighbour->ip = ntohs(ip_num);
+    new_neighbour->port = ntohs(port_num);
 
-    add_neighbour(&new_neighbour);
+    add_neighbour(new_neighbour);
+
+    // TODO: should we send a connection package to the sender? Only if connections are bidirectional...
 }
 
 // process a message

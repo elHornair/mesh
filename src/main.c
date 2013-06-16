@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<pthread.h>
 #include<include/node.h>
 #include<include/worker.h>
@@ -7,6 +8,7 @@
 #define NUM_WORKERS 5
 
 int port = 3333;
+pthread_mutex_t mutex_neighbours;
 
 int main(int argc, char *argv[]) {
     int thread_counter = 0;
@@ -22,6 +24,9 @@ int main(int argc, char *argv[]) {
     // set up this node
     sockfd = create_node(port);
     dbg("Erstellt");
+
+    // init list of all connected neighbours
+    LIST_INIT(&neighbour_head);
 
     // TODO: refactor so it reuses the threads
     while (1) {

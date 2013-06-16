@@ -1,3 +1,5 @@
+#include<sys/queue.h>
+
 typedef struct {
     short id;
     char target;
@@ -5,10 +7,12 @@ typedef struct {
     char message[128];
 } package;
 
-typedef struct {
+LIST_HEAD(neighbour_list, neighbour) neighbour_head;
+struct neighbour {
+    LIST_ENTRY(neighbour) entries;
     long ip;
     int port;
-} neighbour;
+};
 
 void dbg (char* msg);
 int stream_to_package(FILE *stream, package *current_package);
