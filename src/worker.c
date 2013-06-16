@@ -1,9 +1,14 @@
 #include<stdio.h>
+#include<include/util.h>
 
 // parse a message
 int parse_message(int sockfd) {
+    char dbg_str[80];
+    package current_package;
+    FILE *read_stream;
+
     // open reading stream
-    FILE *read_stream = fdopen(sockfd, "r");
+    read_stream = fdopen(sockfd, "r");
     if(read_stream == NULL)
     {
         error("ERROR, Konnte ReadStream nicht erstellen.");
@@ -11,9 +16,12 @@ int parse_message(int sockfd) {
     }
 
     // parse stream
-    if (stream_to_package(read_stream) < 0) {
+    if (stream_to_package(read_stream, &current_package) < 0) {
         error("ERROR, Ungültiges Packet erhalten.");
     }
+
+    sprintf(dbg_str, "Received package with type %c", current_package.type);
+    dbg(dbg_str);
 
     // close stream
     fclose(read_stream);

@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include<stdio.h>
+#include<include/util.h>
 
 extern int port;
 
@@ -7,38 +8,34 @@ void dbg (char* msg) {
     printf("Knoten \t%d:\t%s\n", port, msg);
 }
 
-int stream_to_package(FILE *stream) {
-    short package_id;
+int stream_to_package(FILE *stream, package *current_package) {
     int num_items_read;
-    char target;
-    char type;
-    char message[128];
-    char dbg_str[80];
 
     // package id
-    num_items_read = fread(&package_id, 2, 1, stream);
+    num_items_read = fread(&current_package->package_id, 2, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
+        error("ERROR, Ungültiges Packet.");
     }
 
     // target of the package
-    num_items_read = fread(&target, 1, 1, stream);
+    num_items_read = fread(&current_package->target, 1, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
+        error("ERROR, Ungültiges Packet.");
     }
 
     // package type
-    num_items_read = fread(&type, 1, 1, stream);
+    num_items_read = fread(&current_package->type, 1, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
+        error("ERROR, Ungültiges Packet.");
     }
 
     // message of the package
-    num_items_read = fread(&message, 128, 1, stream);
+    num_items_read = fread(&current_package->message, 128, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
+        error("ERROR, Ungültiges Packet.");
     }
-
-    sprintf(dbg_str, "Received package with type %c", type);
-    dbg(dbg_str);
 }
