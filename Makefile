@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -I. -lpthread
+CFLAGS = -I. -lpthread -g
 SRCDIR = src
 OBJ = $(SRCDIR)/main.o $(SRCDIR)/node.o $(SRCDIR)/worker.o
 
