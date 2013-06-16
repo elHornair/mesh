@@ -10,9 +10,12 @@ void dbg (char* msg) {
 
 int stream_to_package(FILE *stream, package *current_package) {
     int num_items_read;
+    short id;
 
     // package id
-    num_items_read = fread(&current_package->package_id, 2, 1, stream);
+    num_items_read = fread(&id, 2, 1, stream);
+    current_package->id = ntohs(id);
+
     if (num_items_read <= 0) {
 		return -1;
         error("ERROR, Ungültiges Packet.");
