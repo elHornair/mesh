@@ -5,10 +5,20 @@
 
 #define NUM_WORKERS 5
 
+int port = 3333;
+
+
+// TODO: move to utils file
+void dbg (char* msg) {
+    // TODO: auch Z und Q ausgeben
+    printf("Knoten \t%d:\t%s\n", port, msg);
+}
+
 int main(int argc, char *argv[]) {
-    int port = 3333;
     int thread_counter = 0;
     int sockfd;
+    int newsockfd;
+    pthread_t workers[NUM_WORKERS];
 
     // parse options
     if (argc > 1) {
@@ -17,11 +27,11 @@ int main(int argc, char *argv[]) {
 
     // set up this node
     sockfd = create_node(port);
-    pthread_t workers[NUM_WORKERS];
+    dbg("erstellt");
 
+    // TODO: refactor so it reuses the threads
     while (1) {
-        int newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
-        printf("Verbunden mit Node #%d\n", newsockfd);
+        newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection
         thread_counter += 1;
     }

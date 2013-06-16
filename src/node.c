@@ -1,5 +1,3 @@
-#include<stdio.h>
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -52,16 +50,38 @@ int wait_for_connection(int sockfd) {
 	return newsockfd;
 }
 
-// wait for a message
-int wait_for_message(int sockfd) {
-    int msg_length = 99;
-    char message_from_client[msg_length];
+int stream_to_package(FILE *stream) {
+    short package_id;
+    int num_items_read;
+    char target;
+    char type;
+    char message[128];
+    char dbg_str[80];
 
-    // receive message
-    recv(sockfd, message_from_client, msg_length, 0);
-    printf("Nachricht erhalten von #%d: %s", sockfd, message_from_client);
+    // package id
+    num_items_read = fread(&package_id, 2, 1, stream);
+    if (num_items_read <= 0) {
+		return -1;
+    }
 
-    // ping back
-    char *msg = "Thx client, received message!\n";
-    send(sockfd, msg, strlen(msg), 0);
+    // target of the package
+    num_items_read = fread(&target, 1, 1, stream);
+    if (num_items_read <= 0) {
+		return -1;
+    }
+
+    // package type
+    num_items_read = fread(&type, 1, 1, stream);
+    if (num_items_read <= 0) {
+		return -1;
+    }
+
+    // message of the package
+    num_items_read = fread(&message, 128, 1, stream);
+    if (num_items_read <= 0) {
+		return -1;
+    }
+
+    sprintf(dbg_str, "Received package with type %c", type);
+    dbg(dbg_str);
 }
