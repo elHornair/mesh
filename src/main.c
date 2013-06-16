@@ -2,17 +2,11 @@
 #include<pthread.h>
 #include<include/node.h>
 #include<include/worker.h>
+#include<include/util.h>
 
 #define NUM_WORKERS 5
 
 int port = 3333;
-
-
-// TODO: move to utils file
-void dbg (char* msg) {
-    // TODO: auch Z und Q ausgeben
-    printf("Knoten \t%d:\t%s\n", port, msg);
-}
 
 int main(int argc, char *argv[]) {
     int thread_counter = 0;
