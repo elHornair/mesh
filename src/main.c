@@ -6,9 +6,9 @@
 #include<include/util.h>
 
 #define NUM_WORKERS 5
-#define ROLE_DEFAULT 0
-#define ROLE_SOURCE 1
-#define ROLE_GOAL 2
+#define ROLE_DEFAULT 'N'
+#define ROLE_SOURCE 'Q'
+#define ROLE_GOAL 'Z'
 
 int port = 3333;
 int role = ROLE_DEFAULT;

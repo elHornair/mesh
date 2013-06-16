@@ -9,6 +9,7 @@ extern pthread_mutex_t mutex_neighbours;
 void add_neighbour(struct neighbour *neighbour_to_add) {
     struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
     int already_in_list = 0;
+    char dbg_message[100];
 
     // lock neighbours list
     pthread_mutex_lock(&mutex_neighbours);
@@ -16,14 +17,21 @@ void add_neighbour(struct neighbour *neighbour_to_add) {
     // loop through existing neighbours
     LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
         if (neighbour_to_add->port == neighbour_item->port) {
-            printf("Nachbar mit IP %lu und Port %d ist schon registriert\n", neighbour_to_add->ip, neighbour_to_add->port);
+            sprintf(dbg_message,
+                    "Nachbar mit IP %lu und Port %d ist schon registriert",
+                    neighbour_to_add->ip,
+                    neighbour_to_add->port);
+            dbg(dbg_message);
             already_in_list = 1;
         }
     }
 
     // add new neighbour
     if (!already_in_list) {
-        printf("Nachbar mit Port %d hinzugefügt\n", neighbour_to_add->port);
+        sprintf(dbg_message,
+                "Nachbar mit Port %d hinzugefügt",
+                neighbour_to_add->port);
+        dbg(dbg_message);
         LIST_INSERT_HEAD(&neighbour_head, neighbour_to_add, entries);
     }
 
