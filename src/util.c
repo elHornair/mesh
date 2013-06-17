@@ -5,7 +5,6 @@ extern int port;
 extern int role;
 
 void dbg (char* msg) {
-    // TODO: auch Z und Q ausgeben
     printf("Knoten \t%d \t%c:\t%s\n", port, role, msg);
 }
 
