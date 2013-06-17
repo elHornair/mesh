@@ -51,6 +51,10 @@ int main(int argc, char *argv[]) {
 
     // set up this node
     sockfd = create_node(port);
+
+    if (sockfd == -1) {
+        return -1;
+    }
     dbg("Erstellt");
 
     // init list of all connected neighbours

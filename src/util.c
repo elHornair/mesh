@@ -19,27 +19,27 @@ int stream_to_package(FILE *stream, package *current_package) {
 
     if (num_items_read <= 0) {
 		return -1;
-        error("ERROR, Ungültiges Packet.");
+        perror("ERROR, Ungültiges Packet.");
     }
 
     // target of the package
     num_items_read = fread(&current_package->target, 1, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
-        error("ERROR, Ungültiges Packet.");
+        perror("ERROR, Ungültiges Packet.");
     }
 
     // package type
     num_items_read = fread(&current_package->type, 1, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
-        error("ERROR, Ungültiges Packet.");
+        perror("ERROR, Ungültiges Packet.");
     }
 
     // message of the package
     num_items_read = fread(&current_package->message, 128, 1, stream);
     if (num_items_read <= 0) {
 		return -1;
-        error("ERROR, Ungültiges Packet.");
+        perror("ERROR, Ungültiges Packet.");
     }
 }

@@ -84,13 +84,13 @@ int parse_message(int sockfd) {
     read_stream = fdopen(sockfd, "r");
     if(read_stream == NULL)
     {
-        error("ERROR, Konnte ReadStream nicht erstellen.");
+        perror("ERROR, Konnte read stream nicht erstellen.");
 		return -1;
     }
 
     // parse stream
     if (stream_to_package(read_stream, &current_package) < 0) {
-        error("ERROR, Ungültiges Packet erhalten.");
+        perror("ERROR, Ungültiges Packet erhalten.");
     }
 
     // close stream

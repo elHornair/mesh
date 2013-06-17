@@ -23,8 +23,8 @@ int create_node(int port) {
     serv_addr.sin_port = htons(port);
 
     // listen on TCP socket
-    if (bind(sockfd, (struct sockaddr *) & serv_addr,sizeof (serv_addr)) < 0){
-        error("ERROR, konnte Socket nicht anbinden\n");
+    if (bind(sockfd, (struct sockaddr *) & serv_addr, sizeof(serv_addr)) < 0){
+        perror("ERROR, konnte Socket nicht anbinden\n");
 		return -1;
 	}
     listen(sockfd, 5);
@@ -42,7 +42,7 @@ int wait_for_connection(int sockfd) {
     // accept client and create TCP connection
     newsockfd = accept(sockfd, (struct sockaddr *) & cli_addr, &clilen);
     if (newsockfd < 0){
-        error("ERROR, konnte Client nicht anbinden");
+        perror("ERROR, konnte Client nicht anbinden");
 		return -1;
 	}
 
