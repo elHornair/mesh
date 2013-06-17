@@ -16,3 +16,4 @@ struct neighbour {
 
 void dbg (char* msg);
 int stream_to_package(FILE *stream, package *current_package);
+int package_to_stream(package *current_package, FILE *stream);

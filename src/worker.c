@@ -97,17 +97,36 @@ int open_connection(int receiver_port) {
 int forward_package(package *my_package) {
     // TODO: before flooding, first check if we know in what direction to send it already
     int sockfd;
+    FILE *write_stream;
 
     dbg("Leite Paket weiter...");
 
     sockfd = open_connection(3311);// TODO: use the IP from the neighbourstable
-
     if (!sockfd) {
         perror("ERROR, konnte keine Verbindung herstellen\n");
         return -1;
     }
 
-    // TODO: now send data
+    // open stream
+    write_stream = fdopen(dup(sockfd), "w");
+    if(write_stream == NULL) {
+        perror("ERROR, Konnte write stream nicht erstellen\n");
+		return -1;
+    }
+
+    // convert package to stream
+    if (package_to_stream(my_package, write_stream) < 0) {
+        perror("ERROR, Packet kann nicht in Stream umgewandelt werden\n");
+        return -1;
+    }
+
+    // send package
+    fflush(write_stream);
+
+    // close connection
+    fclose(write_stream);
+    close(sockfd);
+    dbg("Paket weitergeleitet");
 }
 
 // process a data package
@@ -138,7 +157,7 @@ int process_package(package *my_package) {
             break;
         default:
             dbg("Paket mit unbekanntem Typ erhalten");
-            printf("typ:%c\n", my_package->type);
+            printf("Typ:%c\n", my_package->type);
             break;
     }
 }
