@@ -5,6 +5,10 @@
 #include<include/util.h>
 
 extern pthread_mutex_t mutex_neighbours;
+extern int role;
+extern const char ROLE_SOURCE;
+extern const char ROLE_GOAL;
+
 
 void add_neighbour(struct neighbour *neighbour_to_add) {
     struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
@@ -39,6 +43,7 @@ void add_neighbour(struct neighbour *neighbour_to_add) {
     pthread_mutex_unlock(&mutex_neighbours);
 }
 
+// process a connection package
 int process_connection_package(package *my_package) {
     int ip_num;
     int port_num;
@@ -55,12 +60,23 @@ int process_connection_package(package *my_package) {
     // TODO: should we send a connection package to the sender? Only if connections are bidirectional...
 }
 
+// process a data package
+int process_data_package(package *my_package) {
+    if (my_package->target == 1 && role == ROLE_GOAL) {
+        dbg("I'm Z and I got a message.");
+    } else if (my_package->target == 0 && role == ROLE_SOURCE) {
+        dbg("I'm Q and I got a message.");
+    } else {
+        dbg("Got message that's not for me - Gonna flood network");
+    }
+}
+
 // process a message
 int process_package(package *my_package) {
     switch(my_package->type){
         case 'C':
             dbg("Datenpaket erhalten");
-            // TODO: handle
+            process_data_package(my_package);
             break;
         case 'O':
             dbg("OK-Paket erhalten");
@@ -71,6 +87,8 @@ int process_package(package *my_package) {
             process_connection_package(my_package);
             break;
         default:
+            dbg("Paket mit unbekanntem Typ erhalten");
+            printf("typ:%c\n", my_package->type);
             break;
     }
 }

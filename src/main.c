@@ -6,17 +6,22 @@
 #include<include/util.h>
 
 #define NUM_WORKERS 5
-#define ROLE_DEFAULT 'N'
-#define ROLE_SOURCE 'Q'
-#define ROLE_GOAL 'Z'
+
+const char ROLE_DEFAULT = 'N';
+const char ROLE_SOURCE = 'Q';
+const char ROLE_GOAL = 'Z';
 
 int port = 3333;
-int role = ROLE_DEFAULT;
+int role;
 
 pthread_mutex_t mutex_neighbours;
 
 int parse_config(int argc, char *argv[]) {
     int opt;
+
+
+    // default value for role
+    role = ROLE_DEFAULT;
 
     while ((opt = getopt (argc, argv, "-qzh")) != -1)
         switch (opt) {
@@ -61,6 +66,7 @@ int main(int argc, char *argv[]) {
     LIST_INIT(&neighbour_head);
 
     // TODO: refactor so it reuses the threads
+    // TODO: create the threads upfront
     while (1) {
         newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection
