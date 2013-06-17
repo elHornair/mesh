@@ -9,24 +9,27 @@ int create_node(int port) {
     int sockfd;
     struct sockaddr_in serv_addr;
 
-    // create
+    // create socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd < 0){
-        error("ERROR, konnte Socket nicht öffnen\n");
+        perror("ERROR, konnte Socket nicht erstellen\n");
 		return -1;
 	}
+
+    // bind socket to port
     bzero((char *) & serv_addr, sizeof (serv_addr));
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
 
-    // listen on TCP socket
     if (bind(sockfd, (struct sockaddr *) & serv_addr, sizeof(serv_addr)) < 0){
         perror("ERROR, konnte Socket nicht anbinden\n");
 		return -1;
 	}
+
+	// listen to messages
     listen(sockfd, 5);
 
     return sockfd;
