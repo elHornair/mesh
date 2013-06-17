@@ -93,15 +93,12 @@ int open_connection(int receiver_port) {
     return sockfd;
 }
 
-// forward a package (either by knowing the direction or by flooding the network)
-int forward_package(package *my_package) {
-    // TODO: before flooding, first check if we know in what direction to send it already
+int send_package(package *my_package, int receiver_port) {
     int sockfd;
     FILE *write_stream;
+    char dbg_message[100];
 
-    dbg("Leite Paket weiter...");
-
-    sockfd = open_connection(3311);// TODO: use the IP from the neighbourstable
+    sockfd = open_connection(receiver_port);
     if (!sockfd) {
         perror("ERROR, konnte keine Verbindung herstellen\n");
         return -1;
@@ -126,7 +123,40 @@ int forward_package(package *my_package) {
     // close connection
     fclose(write_stream);
     close(sockfd);
-    dbg("Paket weitergeleitet");
+
+    sprintf(dbg_message,
+            "Paket mit id %d gesendet an Port %d",
+            my_package->id,
+            receiver_port);
+    dbg(dbg_message);
+
+    return 0;
+}
+
+// forward a package (either by knowing the direction or by flooding the network)
+int forward_package(package *my_package) {
+    struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
+
+    dbg("Leite Paket weiter...");
+
+    // TODO: before flooding, first check if we know in what direction to send it already
+
+    // flood network
+    if (1) {// TODO: this will say whether the searched node is in the routing table or not
+
+        // lock neighbours list
+        pthread_mutex_lock(&mutex_neighbours);
+
+        // loop through existing neighbours
+        LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
+            send_package(my_package, neighbour_item->port);
+        }
+
+        // unlock neighbours list
+        pthread_mutex_unlock(&mutex_neighbours);
+    }
+
+    return 0;
 }
 
 // process a data package
