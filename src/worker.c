@@ -2,13 +2,16 @@
 #include<stdlib.h>
 #include<string.h>
 #include<pthread.h>
+#include<sys/types.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<netdb.h>
 #include<include/util.h>
 
 extern pthread_mutex_t mutex_neighbours;
 extern int role;
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
-
 
 void add_neighbour(struct neighbour *neighbour_to_add) {
     struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
@@ -60,6 +63,53 @@ int process_connection_package(package *my_package) {
     // TODO: should we send a connection package to the sender? Only if connections are bidirectional...
 }
 
+// open connection to another node
+int open_connection(int receiver_port) {
+    int sockfd;
+    struct hostent *host_addr;
+    struct sockaddr_in server;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0){
+        perror("ERROR, konnte Socket nicht erstellen\n");
+        return -1;
+    }
+
+    host_addr = gethostbyname("localhost");
+    if (!host_addr) {
+        perror("ERROR, konnte hostname nicht auflösen\n");
+        return -1;
+    }
+
+    memcpy(&server.sin_addr, host_addr->h_addr_list[0], host_addr->h_length);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(receiver_port);
+
+    if (connect(sockfd, (struct sockaddr *)&server, sizeof(server))) {
+        perror("ERROR, konnte Socket nicht verbinden\n");
+        return -1;
+    }
+
+    return sockfd;
+}
+
+// forward a package (either by knowing the direction or by flooding the network)
+int forward_package(package *my_package) {
+    // TODO: before flooding, first check if we know in what direction to send it already
+    int sockfd;
+
+    dbg("Leite Paket weiter...");
+
+    sockfd = open_connection(3311);// TODO: use the IP from the neighbourstable
+
+    if (!sockfd) {
+        perror("ERROR, konnte keine Verbindung herstellen\n");
+        return -1;
+    }
+
+    // TODO: now send data
+}
+
 // process a data package
 int process_data_package(package *my_package) {
     if (my_package->target == 1 && role == ROLE_GOAL) {
@@ -67,7 +117,7 @@ int process_data_package(package *my_package) {
     } else if (my_package->target == 0 && role == ROLE_SOURCE) {
         dbg("I'm Q and I got a message.");
     } else {
-        dbg("Got message that's not for me - Gonna flood network");
+        forward_package(my_package);
     }
 }
 
