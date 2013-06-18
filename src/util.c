@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<string.h>
 #include<include/util.h>
 
 extern int port;
@@ -82,7 +83,7 @@ int stream_to_package(FILE *stream, package *current_package) {
     return 0;
 }
 
-int package_to_node(package *my_package, struct node *new_node) {
+int package_message_to_node(package *my_package, struct node *new_node) {
     int ip_num;
     int port_num;
 
@@ -91,4 +92,14 @@ int package_to_node(package *my_package, struct node *new_node) {
 
     new_node->ip = ntohs(ip_num);
     new_node->port = ntohs(port_num);
+}
+
+int node_to_package_message(struct node *my_node, package *my_package) {
+    int ip_num = htons(my_node->ip);
+    int port_num = htons(my_node->port);
+
+    memcpy(&(my_package->message[3]), &ip_num, 1);
+    memcpy(&(my_package->message[4]), &port_num, 2);
+
+    // TODO: das überschreibt einen teil der "echten" message bei datenpaketen -> echte message um 6 byte shiften?
 }

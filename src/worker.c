@@ -10,6 +10,7 @@
 
 extern pthread_mutex_t mutex_neighbours;
 extern int role;
+extern int port;
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
 
@@ -52,7 +53,7 @@ int process_connection_package(package *my_package) {
     int port_num;
     struct node *new_neighbour = malloc(sizeof(struct node));
 
-    package_to_node(my_package, new_neighbour);
+    package_message_to_node(my_package, new_neighbour);
     add_neighbour(new_neighbour);
 
     // TODO: should we send a connection package to the sender? Only if connections are bidirectional...
@@ -92,6 +93,11 @@ int send_package(package *my_package, int receiver_port) {
     int sockfd;
     FILE *write_stream;
     char dbg_message[100];
+    struct node *this_node = malloc(sizeof(struct node));
+
+    // write information about current node into the package so the neighbour will know where it came from
+    this_node->port = port;
+    node_to_package_message(this_node, my_package);
 
     sockfd = open_connection(receiver_port);
     if (!sockfd) {
@@ -156,10 +162,18 @@ int forward_package(package *my_package) {
 
 // process a data package
 int process_data_package(package *my_package) {
+    struct node *sender_node = malloc(sizeof(struct node));
+    package_message_to_node(my_package, sender_node);
+
+    // TODO: Hier kann ich gleich den Absender in die Routingtabelle eintragen, weil ich weiss, dass er näher am
+    // TODO: anderen Ende als das Ziel des Pakets dran ist, als ich. An alle anderen Nodes flute ich, es sei denn,
+    // TODO: ich weiss genau, wo das paket hin muss
+
     if (my_package->target == 1 && role == ROLE_GOAL) {
         dbg("I'm Z and I got a message.");
+        // TODO: send ok message
     } else if (my_package->target == 0 && role == ROLE_SOURCE) {
-        dbg("I'm Q and I got a message.");
+        // TODO: send ok message
     } else {
         forward_package(my_package);
     }
