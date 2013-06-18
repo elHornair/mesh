@@ -13,8 +13,8 @@ extern int role;
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
 
-void add_neighbour(struct neighbour *neighbour_to_add) {
-    struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
+void add_neighbour(struct node *neighbour_to_add) {
+    struct node *neighbour_item = malloc(sizeof(struct node));
     int already_in_list = 0;
     char dbg_message[100];
 
@@ -50,14 +50,9 @@ void add_neighbour(struct neighbour *neighbour_to_add) {
 int process_connection_package(package *my_package) {
     int ip_num;
     int port_num;
-    struct neighbour *new_neighbour = malloc(sizeof(struct neighbour));
+    struct node *new_neighbour = malloc(sizeof(struct node));
 
-    memcpy(&ip_num, &(my_package->message[3]), 1);// not sure if everything's correct here
-    memcpy(&port_num, &(my_package->message[4]), 2);
-
-    new_neighbour->ip = ntohs(ip_num);
-    new_neighbour->port = ntohs(port_num);
-
+    package_to_node(my_package, new_neighbour);
     add_neighbour(new_neighbour);
 
     // TODO: should we send a connection package to the sender? Only if connections are bidirectional...
@@ -135,7 +130,7 @@ int send_package(package *my_package, int receiver_port) {
 
 // forward a package (either by knowing the direction or by flooding the network)
 int forward_package(package *my_package) {
-    struct neighbour *neighbour_item = malloc(sizeof(struct neighbour));
+    struct node *neighbour_item = malloc(sizeof(struct node));
 
     dbg("Leite Paket weiter...");
 

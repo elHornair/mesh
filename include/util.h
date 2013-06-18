@@ -7,9 +7,9 @@ typedef struct {
     char message[128];
 } package;
 
-LIST_HEAD(neighbour_list, neighbour) neighbour_head;
-struct neighbour {
-    LIST_ENTRY(neighbour) entries;
+LIST_HEAD(neighbour_list, node) neighbour_head;
+struct node {
+    LIST_ENTRY(node) entries;
     long ip;
     int port;
 };

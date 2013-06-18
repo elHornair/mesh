@@ -81,3 +81,14 @@ int stream_to_package(FILE *stream, package *current_package) {
 
     return 0;
 }
+
+int package_to_node(package *my_package, struct node *new_node) {
+    int ip_num;
+    int port_num;
+
+    memcpy(&ip_num, &(my_package->message[3]), 1);// not sure if everything's correct here
+    memcpy(&port_num, &(my_package->message[4]), 2);
+
+    new_node->ip = ntohs(ip_num);
+    new_node->port = ntohs(port_num);
+}
