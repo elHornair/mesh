@@ -11,6 +11,10 @@ const char ROLE_DEFAULT = 'N';
 const char ROLE_SOURCE = 'Q';
 const char ROLE_GOAL = 'Z';
 
+const char TYPE_CONTENT = 'C';
+const char TYPE_OK = 'O';
+const char TYPE_NEIGHBOUR = 'N';
+
 int port = 3333;
 int role;
 

@@ -11,8 +11,12 @@
 extern pthread_mutex_t mutex_neighbours;
 extern int role;
 extern int port;
+
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
+extern char TYPE_CONTENT;
+extern char TYPE_OK;
+extern char TYPE_NEIGHBOUR;
 
 void add_neighbour(struct node *neighbour_to_add) {
     struct node *neighbour_item = malloc(sizeof(struct node));
@@ -181,23 +185,18 @@ int process_data_package(package *my_package) {
 
 // process a message
 int process_package(package *my_package) {
-    switch(my_package->type){
-        case 'C':
-            dbg("Datenpaket erhalten");
-            process_data_package(my_package);
-            break;
-        case 'O':
-            dbg("OK-Paket erhalten");
-            // TODO: handle
-            break;
-        case 'N':
-            dbg("Verbindungspaket erhalten");
-            process_connection_package(my_package);
-            break;
-        default:
-            dbg("Paket mit unbekanntem Typ erhalten");
-            printf("Typ:%c\n", my_package->type);
-            break;
+    if (my_package->type == TYPE_CONTENT){
+        dbg("Datenpaket erhalten");
+        process_data_package(my_package);
+    } else if (my_package->type == TYPE_OK) {
+        dbg("OK-Paket erhalten");
+        // TODO: handle
+    } else if (my_package->type == TYPE_NEIGHBOUR) {
+        dbg("Verbindungspaket erhalten");
+        process_connection_package(my_package);
+    } else {
+        dbg("Paket mit unbekanntem Typ erhalten");
+        printf("Typ:%c\n", my_package->type);
     }
 }
 
