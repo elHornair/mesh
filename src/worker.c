@@ -166,18 +166,24 @@ int forward_package(package *my_package) {
 
 // process a data package
 int process_data_package(package *my_package) {
-    struct node *sender_node = malloc(sizeof(struct node));
+    struct node *sender_node = malloc(sizeof(struct node));// the node that sent this package
     package_message_to_node(my_package, sender_node);
 
     // TODO: Hier kann ich gleich den Absender in die Routingtabelle eintragen, weil ich weiss, dass er näher am
     // TODO: anderen Ende als das Ziel des Pakets dran ist, als ich. An alle anderen Nodes flute ich, es sei denn,
     // TODO: ich weiss genau, wo das paket hin muss
 
+    package_message_to_node(my_package, sender_node);
+
     if (my_package->target == 1 && role == ROLE_GOAL) {
-        dbg("I'm Z and I got a message.");
-        // TODO: send ok message
+        dbg("I'm Z and I got a message.");// TODO: write expected message (see test script)
+
+        // send ok-package back
+        my_package->target = 0;
+        my_package->type = TYPE_OK;
+        send_package(my_package, sender_node->port);
     } else if (my_package->target == 0 && role == ROLE_SOURCE) {
-        // TODO: send ok message
+        // TODO: send ok message (same as aboeve, only with different target)
     } else {
         forward_package(my_package);
     }
