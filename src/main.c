@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection
-        thread_counter += 1;
+        thread_counter += 1;// TODO: so mache ich im moment glaub einen overflow -> check
     }
 
     return 0;
