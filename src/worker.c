@@ -10,9 +10,11 @@
 
 extern pthread_mutex_t mutex_neighbours;
 extern pthread_mutex_t mutex_router;
+extern pthread_mutex_t mutex_blacklist;
 extern int role;
 extern int port;
 extern struct router *my_router;
+extern char package_id_blacklist[65536];
 
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
@@ -199,6 +201,18 @@ int send_package(package *my_package, int receiver_port) {
 // forward a package (either by knowing the direction or by flooding the network)
 int forward_package(package *my_package) {
     struct node *neighbour_item = malloc(sizeof(struct node));
+
+    // make sure we forward a package with a certain id only once
+    // we make an exception for OK-packages, since they have the same id as their corresponding data package
+    if (my_package->type != TYPE_OK) {
+        pthread_mutex_lock(&mutex_blacklist);// lock id blacklist
+        if (package_id_blacklist[my_package->id] == 1) {
+            dbg("This package was already forwarded before. Not forwarding it again\n");
+            return -1;
+        }
+        package_id_blacklist[my_package->id] = 1;
+        pthread_mutex_unlock(&mutex_blacklist);// unlock id blacklist
+    }
 
     // check if we know to what neighbour to forward the package
     if (my_package->target == 0) {

@@ -18,13 +18,14 @@ const char TYPE_NEIGHBOUR = 'N';
 int port = 3333;// the port this node runs on
 int role;// the role of this node
 struct router *my_router;// the routing table of this node
-
+char package_id_blacklist[65536];// All possible package ids (2^16 = 65536)
 
 // TODO: liste führen mit daten-packages, die schon geforwarded wurden. dann packet nur einmal forwarden
 // TODO: für ok-packages ist es kein problem, da wir dann die route schon wissen
 
 pthread_mutex_t mutex_neighbours;
 pthread_mutex_t mutex_router;
+pthread_mutex_t mutex_blacklist;
 
 int parse_config(int argc, char *argv[]) {
     int opt;
