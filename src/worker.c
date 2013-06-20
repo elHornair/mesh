@@ -79,7 +79,7 @@ int add_neighbour(struct node *neighbour_to_add) {
 update_routing_table(package *my_package) {
     struct node *sender_node = malloc(sizeof(struct node));
 
-    package_message_to_node(my_package, sender_node);
+    package_message_to_node(my_package, sender_node, 122);
 
     // lock router
     pthread_mutex_lock(&mutex_router);
@@ -111,13 +111,13 @@ int process_connection_package(package *my_package) {
     struct node *new_neighbour = malloc(sizeof(struct node));
     struct node *this_node = malloc(sizeof(struct node));
 
-    package_message_to_node(my_package, new_neighbour);
+    package_message_to_node(my_package, new_neighbour, 0);
     neighbour_added = add_neighbour(new_neighbour);
 
     if (neighbour_added) {
         // Send connection package to neighbour, since mesh connections are bidirectional
         this_node->port = port;
-        node_to_package_message(this_node, my_package);
+        node_to_package_message(this_node, my_package, 0);
         send_package(my_package, new_neighbour->port);
     }
 }
@@ -161,7 +161,7 @@ int send_package(package *my_package, int receiver_port) {
 
     // write information about current node into the package so the neighbour will know where it came from
     this_node->port = port;
-    node_to_package_message(this_node, my_package);
+    node_to_package_message(this_node, my_package, 122);
 
     sockfd = open_connection(receiver_port);
     if (!sockfd) {
@@ -250,7 +250,9 @@ int forward_package(package *my_package) {
 int process_data_package(package *my_package) {
     struct node *sender_node = malloc(sizeof(struct node));// the node that sent this package
 
-    package_message_to_node(my_package, sender_node);
+    package_message_to_node(my_package, sender_node, 122);
+
+    fprintf(stderr, "--------------_Verarbeite nachricht mit id %d\n", my_package->id);
 
     if (my_package->target == 1 && role == ROLE_GOAL ||
         my_package->target == 0 && role == ROLE_SOURCE) {

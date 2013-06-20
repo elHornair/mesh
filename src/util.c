@@ -83,23 +83,23 @@ int stream_to_package(FILE *stream, package *current_package) {
     return 0;
 }
 
-int package_message_to_node(package *my_package, struct node *new_node) {
+int package_message_to_node(package *my_package, struct node *new_node, int start_byte) {
     int ip_num;
     int port_num;
 
-    memcpy(&ip_num, &(my_package->message[3]), 1);// not sure if everything's correct here
-    memcpy(&port_num, &(my_package->message[4]), 2);
+    memcpy(&ip_num, &(my_package->message[start_byte]), 4);// not sure if everything's correct here
+    memcpy(&port_num, &(my_package->message[start_byte + 4]), 2);
 
     new_node->ip = ntohs(ip_num);
     new_node->port = ntohs(port_num);
 }
 
-int node_to_package_message(struct node *my_node, package *my_package) {
+int node_to_package_message(struct node *my_node, package *my_package, int start_byte) {
     int ip_num = htons(my_node->ip);
     int port_num = htons(my_node->port);
 
-    memcpy(&(my_package->message[3]), &ip_num, 1);
-    memcpy(&(my_package->message[4]), &port_num, 2);
+    memcpy(&(my_package->message[start_byte]), &ip_num, 4);
+    memcpy(&(my_package->message[start_byte + 4]), &port_num, 2);
 
     // TODO: das überschreibt einen teil der "echten" message bei datenpaketen -> echte message um 6 byte shiften?
 }
