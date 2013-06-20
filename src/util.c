@@ -6,7 +6,7 @@ extern int port;
 extern int role;
 
 void dbg (char* msg) {
-    printf("Knoten \t%d \t%c:\t%s\n", port, role, msg);
+    fprintf(stderr, "Knoten \t%d \t%c:\t%s\n", port, role, msg);
 }
 
 int package_to_stream(package *my_package, FILE *stream) {
