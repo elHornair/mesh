@@ -254,7 +254,7 @@ int process_data_package(package *my_package) {
 
     if (my_package->target == 1 && role == ROLE_GOAL ||
         my_package->target == 0 && role == ROLE_SOURCE) {
-        dbg("I got a message.");// TODO: write expected message (see test script)
+        dbg("Nachricht erhalten. Sende OK-Paket");// TODO: write expected message (see test script)
 
         // the new target is the other end of the network
         if (my_package->target == 1) {
@@ -271,6 +271,16 @@ int process_data_package(package *my_package) {
     }
 }
 
+// process an OK package
+int process_ok_package(package *my_package) {
+    if (my_package->target == 1 && role == ROLE_GOAL ||
+        my_package->target == 0 && role == ROLE_SOURCE) {
+        dbg("Ok package reached original sender. It's all good, nothing left to do");// TODO: write expected message (see test script)
+    } else {
+        forward_package(my_package);
+    }
+}
+
 // process a message
 int process_package(package *my_package) {
     if (my_package->type == TYPE_CONTENT){
@@ -280,7 +290,7 @@ int process_package(package *my_package) {
     } else if (my_package->type == TYPE_OK) {
         dbg("OK-Paket erhalten");
         update_routing_table(my_package);
-        // TODO: handle
+        process_ok_package(my_package);
     } else if (my_package->type == TYPE_NEIGHBOUR) {
         dbg("Verbindungspaket erhalten");
         process_connection_package(my_package);
