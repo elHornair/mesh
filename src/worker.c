@@ -18,33 +18,52 @@ extern char TYPE_CONTENT;
 extern char TYPE_OK;
 extern char TYPE_NEIGHBOUR;
 
-void add_neighbour(struct node *neighbour_to_add) {
+// checks if a certain node is already registered as a neighbour
+//      returns 1 if my_node is a neighbour
+//      returns 0 if my_node is not a neighbour
+int is_neighbour (struct node *my_node) {
     struct node *neighbour_item = malloc(sizeof(struct node));
-    int already_in_list = 0;
-    char dbg_message[100];
 
     // lock neighbours list
     pthread_mutex_lock(&mutex_neighbours);
 
     // loop through existing neighbours
     LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
-        if (neighbour_to_add->port == neighbour_item->port) {
-            sprintf(dbg_message,
-                    "Nachbar mit IP %lu und Port %d ist schon registriert",
-                    neighbour_to_add->ip,
-                    neighbour_to_add->port);
-            dbg(dbg_message);
-            already_in_list = 1;
+        if (my_node->port == neighbour_item->port) {
+            // unlock neighbours list
+            pthread_mutex_unlock(&mutex_neighbours);
+            return 1;
         }
     }
 
-    // add new neighbour
+    // unlock neighbours list
+    pthread_mutex_unlock(&mutex_neighbours);
+
+    return 0;
+}
+
+// add a neighbour to this node
+//      returns 1 if neighbour was added
+//      returns 0 if neighbour was already registered
+int add_neighbour(struct node *neighbour_to_add) {
+    int already_in_list = is_neighbour(neighbour_to_add);
+    int neighbour_added;
+    char dbg_message[100];
+
     if (!already_in_list) {
+        pthread_mutex_lock(&mutex_neighbours);// lock neighbours list
+        LIST_INSERT_HEAD(&neighbour_head, neighbour_to_add, entries);// add new neighbour
+        pthread_mutex_unlock(&mutex_neighbours);// unlock neighbours list
+
         sprintf(dbg_message,
                 "Nachbar mit Port %d hinzugefügt",
                 neighbour_to_add->port);
-        dbg(dbg_message);
-        LIST_INSERT_HEAD(&neighbour_head, neighbour_to_add, entries);
+        neighbour_added = 1;
+    } else {
+        sprintf(dbg_message,
+                "Nachbar mit Port %d ist schon registriert. Unternehme nichts",
+                neighbour_to_add->port);
+        neighbour_added = 0;
     }
 
     // unlock neighbours list
@@ -55,12 +74,20 @@ void add_neighbour(struct node *neighbour_to_add) {
 int process_connection_package(package *my_package) {
     int ip_num;
     int port_num;
+    int neighbour_added;
     struct node *new_neighbour = malloc(sizeof(struct node));
+    struct node *this_node = malloc(sizeof(struct node));
 
     package_message_to_node(my_package, new_neighbour);
-    add_neighbour(new_neighbour);
+    neighbour_added = add_neighbour(new_neighbour);
 
-    // TODO: should we send a connection package to the sender? Only if connections are bidirectional...
+    if (neighbour_added) {
+        // Send connection package to neighbour, since mesh connections are bidirectional
+        this_node->port = port;
+        printf("Gonna add myself (port %d) as a neighbour of %d aswell\n", this_node->port, new_neighbour->port);
+        node_to_package_message(this_node, my_package);
+        send_package(my_package, new_neighbour->port);
+    }
 }
 
 // open connection to another node
@@ -93,6 +120,7 @@ int open_connection(int receiver_port) {
     return sockfd;
 }
 
+// send a package
 int send_package(package *my_package, int receiver_port) {
     int sockfd;
     FILE *write_stream;
@@ -167,7 +195,6 @@ int forward_package(package *my_package) {
 // process a data package
 int process_data_package(package *my_package) {
     struct node *sender_node = malloc(sizeof(struct node));// the node that sent this package
-    package_message_to_node(my_package, sender_node);
 
     // TODO: Hier kann ich gleich den Absender in die Routingtabelle eintragen, weil ich weiss, dass er näher am
     // TODO: anderen Ende als das Ziel des Pakets dran ist, als ich. An alle anderen Nodes flute ich, es sei denn,
@@ -181,9 +208,9 @@ int process_data_package(package *my_package) {
         // send ok-package back
         my_package->target = 0;
         my_package->type = TYPE_OK;
-        send_package(my_package, sender_node->port);
+        send_package(my_package, sender_node->port);// TODO: Eigentlich wollen wir nicht an den sender schicken, sondern an ziel (hier quelle -> routingtable benutzen)
     } else if (my_package->target == 0 && role == ROLE_SOURCE) {
-        // TODO: send ok message (same as aboeve, only with different target)
+        // TODO: send ok message (same as above, only with different target)
     } else {
         forward_package(my_package);
     }
