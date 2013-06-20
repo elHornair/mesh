@@ -250,10 +250,6 @@ int forward_package(package *my_package) {
 int process_data_package(package *my_package) {
     struct node *sender_node = malloc(sizeof(struct node));// the node that sent this package
 
-    // TODO: Hier kann ich gleich den Absender in die Routingtabelle eintragen, weil ich weiss, dass er näher am
-    // TODO: anderen Ende als das Ziel des Pakets dran ist, als ich. An alle anderen Nodes flute ich, es sei denn,
-    // TODO: ich weiss genau, wo das paket hin muss
-
     package_message_to_node(my_package, sender_node);
 
     if (my_package->target == 1 && role == ROLE_GOAL) {
