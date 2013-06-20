@@ -252,16 +252,20 @@ int process_data_package(package *my_package) {
 
     package_message_to_node(my_package, sender_node);
 
-    if (my_package->target == 1 && role == ROLE_GOAL) {
-        dbg("I'm Z and I got a message.");// TODO: write expected message (see test script)
+    if (my_package->target == 1 && role == ROLE_GOAL ||
+        my_package->target == 0 && role == ROLE_SOURCE) {
+        dbg("I got a message.");// TODO: write expected message (see test script)
+
+        // the new target is the other end of the network
+        if (my_package->target == 1) {
+            my_package->target = 0;
+        } else {
+            my_package->target = 1;
+        }
 
         // send ok-package back
-        my_package->target = 0;
         my_package->type = TYPE_OK;
         send_package(my_package, sender_node->port);// TODO: Eigentlich wollen wir nicht an den sender schicken, sondern an ziel (hier quelle -> routingtable benutzen)
-    } else if (my_package->target == 0 && role == ROLE_SOURCE) {
-        dbg("I'm Q and I got a message.");
-        // TODO: send ok message (same as above, only with different target)
     } else {
         forward_package(my_package);
     }
