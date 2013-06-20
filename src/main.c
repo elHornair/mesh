@@ -20,8 +20,7 @@ int role;// the role of this node
 struct router *my_router;// the routing table of this node
 char package_id_blacklist[65536];// All possible package ids (2^16 = 65536)
 
-// TODO: liste führen mit daten-packages, die schon geforwarded wurden. dann packet nur einmal forwarden
-// TODO: für ok-packages ist es kein problem, da wir dann die route schon wissen
+// TODO: update all h-files
 
 pthread_mutex_t mutex_neighbours;
 pthread_mutex_t mutex_router;
@@ -73,11 +72,14 @@ int main(int argc, char *argv[]) {
     }
     dbg("Erstellt");
 
+    // TODO: machen, dass nie versucht wird, zwei verbindungen gleichzeitig aufzumachen auf einem bestimmten port
+
     // init list of all connected neighbours
     LIST_INIT(&neighbour_head);
 
     // TODO: refactor so it reuses the threads
     // TODO: create the threads upfront
+    // TODO: müssen die threads überhaupt in einem array sein?
     while (1) {
         newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection

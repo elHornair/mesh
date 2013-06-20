@@ -100,6 +100,4 @@ int node_to_package_message(struct node *my_node, package *my_package, int start
 
     memcpy(&(my_package->message[start_byte]), &ip_num, 4);
     memcpy(&(my_package->message[start_byte + 4]), &port_num, 2);
-
-    // TODO: das überschreibt einen teil der "echten" message bei datenpaketen -> echte message um 6 byte shiften?
 }

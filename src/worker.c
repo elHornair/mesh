@@ -298,7 +298,7 @@ int process_package(package *my_package) {
         process_connection_package(my_package);
     } else {
         dbg("Paket mit unbekanntem Typ erhalten");
-        printf("Typ:%c\n", my_package->type);
+        fprintf(stderr, "Typ:%c\n", my_package->type);
     }
 }
 
