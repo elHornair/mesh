@@ -15,14 +15,19 @@ const char TYPE_CONTENT = 'C';
 const char TYPE_OK = 'O';
 const char TYPE_NEIGHBOUR = 'N';
 
-int port = 3333;
-int role;
+int port = 3333;// the port this node runs on
+int role;// the role of this node
+struct router *my_router;// the routing table of this node
+
+
+// TODO: liste führen mit daten-packages, die schon geforwarded wurden. dann packet nur einmal forwarden
+// TODO: für ok-packages ist es kein problem, da wir dann die route schon wissen
 
 pthread_mutex_t mutex_neighbours;
+pthread_mutex_t mutex_router;
 
 int parse_config(int argc, char *argv[]) {
     int opt;
-
 
     // default value for role
     role = ROLE_DEFAULT;
@@ -52,6 +57,7 @@ int main(int argc, char *argv[]) {
     int sockfd;
     int newsockfd;
     pthread_t workers[NUM_WORKERS];
+    my_router = malloc(sizeof(struct router));
 
     // parse config
     if (!parse_config(argc, argv)) {

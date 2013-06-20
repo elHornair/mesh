@@ -9,8 +9,10 @@
 #include<include/util.h>
 
 extern pthread_mutex_t mutex_neighbours;
+extern pthread_mutex_t mutex_router;
 extern int role;
 extern int port;
+extern struct router *my_router;
 
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
@@ -66,8 +68,37 @@ int add_neighbour(struct node *neighbour_to_add) {
         neighbour_added = 0;
     }
 
-    // unlock neighbours list
-    pthread_mutex_unlock(&mutex_neighbours);
+    dbg(dbg_message);
+
+    return neighbour_added;
+}
+
+// update the routing table with the information contained in a package
+update_routing_table(package *my_package) {
+    struct node *sender_node = malloc(sizeof(struct node));
+
+    package_message_to_node(my_package, sender_node);
+
+    // lock router
+    pthread_mutex_lock(&mutex_router);
+
+    // only add routes to known neighbours
+    if (is_neighbour(sender_node)) {
+        if (my_package->target == 0) {
+            // package is for source (and therefore comes from goal)
+            if(my_router->goal_neighbour == 0) {
+                my_router->goal_neighbour = sender_node->port;
+            }
+        } else {
+            // package is for goal (and therefore comes from source)
+            if(my_router->source_neighbour == 0) {
+                my_router->source_neighbour = sender_node->port;
+            }
+        }
+    }
+
+    // unlock router
+    pthread_mutex_unlock(&mutex_router);
 }
 
 // process a connection package
@@ -84,7 +115,6 @@ int process_connection_package(package *my_package) {
     if (neighbour_added) {
         // Send connection package to neighbour, since mesh connections are bidirectional
         this_node->port = port;
-        printf("Gonna add myself (port %d) as a neighbour of %d aswell\n", this_node->port, new_neighbour->port);
         node_to_package_message(this_node, my_package);
         send_package(my_package, new_neighbour->port);
     }
@@ -210,6 +240,7 @@ int process_data_package(package *my_package) {
         my_package->type = TYPE_OK;
         send_package(my_package, sender_node->port);// TODO: Eigentlich wollen wir nicht an den sender schicken, sondern an ziel (hier quelle -> routingtable benutzen)
     } else if (my_package->target == 0 && role == ROLE_SOURCE) {
+        dbg("I'm Q and I got a message.");
         // TODO: send ok message (same as above, only with different target)
     } else {
         forward_package(my_package);
@@ -220,9 +251,11 @@ int process_data_package(package *my_package) {
 int process_package(package *my_package) {
     if (my_package->type == TYPE_CONTENT){
         dbg("Datenpaket erhalten");
+        update_routing_table(my_package);
         process_data_package(my_package);
     } else if (my_package->type == TYPE_OK) {
         dbg("OK-Paket erhalten");
+        update_routing_table(my_package);
         // TODO: handle
     } else if (my_package->type == TYPE_NEIGHBOUR) {
         dbg("Verbindungspaket erhalten");
@@ -261,7 +294,7 @@ int parse_message(int sockfd) {
 void *worker_init(void *sockfd_ptr)
 {
     int sockfd = (int)sockfd_ptr;
-    dbg("TCP-Verbindung hergestellt. Warte auf Packet...");
+    //dbg("TCP-Verbindung hergestellt. Warte auf Packet...");
     parse_message(sockfd);
     pthread_exit(NULL);
 }

@@ -1,5 +1,11 @@
 #include<sys/queue.h>
 
+struct router {
+    short goal_neighbour;// the port of the neighbour that packages with the target "goal" are to be forwarded
+    short source_neighbour;// the port of the neighbour that packages with the target "source" are to be forwarded
+    // for both properties, an entry of 0 means that the respective neighbour is not yet known
+};
+
 typedef struct {
     short id;
     char target;
