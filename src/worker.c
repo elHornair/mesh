@@ -178,7 +178,7 @@ int send_package(package *my_package, int receiver_port) {
 
     // convert package to stream
     if (package_to_stream(my_package, write_stream) < 0) {
-        perror("ERROR, Packet kann nicht in Stream umgewandelt werden\n");
+        perror("ERROR, Paket kann nicht in Stream umgewandelt werden\n");
         return -1;
     }
 
@@ -206,8 +206,8 @@ int forward_package(package *my_package) {
     // we make an exception for OK-packages, since they have the same id as their corresponding data package
     if (my_package->type != TYPE_OK) {
         pthread_mutex_lock(&mutex_blacklist);// lock id blacklist
-        if (package_id_blacklist[my_package->id] == 1) {
-            dbg("This package was already forwarded before. Not forwarding it again\n");
+        if (package_id_blacklist[my_package->id] == 1) {// TODO: make this smarter -> % 256?
+            dbg("Dieses Paket habe ich bereits einmal weitergeleitet. Verwerfe es");
             return -1;
         }
         package_id_blacklist[my_package->id] = 1;
@@ -265,7 +265,7 @@ int process_data_package(package *my_package) {
 
         // send ok-package back
         my_package->type = TYPE_OK;
-        send_package(my_package, sender_node->port);// TODO: Eigentlich wollen wir nicht an den sender schicken, sondern an ziel (hier quelle -> routingtable benutzen)
+        send_package(my_package, sender_node->port);// TODO: Eigentlich wollen wir nicht an den sender schicken, sondern an target -> routingtable benutzen
     } else {
         forward_package(my_package);
     }
@@ -275,7 +275,7 @@ int process_data_package(package *my_package) {
 int process_ok_package(package *my_package) {
     if (my_package->target == 1 && role == ROLE_GOAL ||
         my_package->target == 0 && role == ROLE_SOURCE) {
-        dbg("Ok package reached original sender. It's all good, nothing left to do");// TODO: write expected message (see test script)
+        dbg("OK-Paket hat ursprünglichen Sender erreicht. Alles ist gut :)");
     } else {
         forward_package(my_package);
     }
@@ -315,7 +315,7 @@ int parse_message(int sockfd) {
 
     // parse stream
     if (stream_to_package(read_stream, &current_package) < 0) {
-        perror("ERROR, Ungültiges Packet erhalten.");
+        perror("ERROR, Ungültiges Paket erhalten.");
     }
 
     // close stream
@@ -328,7 +328,7 @@ int parse_message(int sockfd) {
 void *worker_init(void *sockfd_ptr)
 {
     int sockfd = (int)sockfd_ptr;
-    //dbg("TCP-Verbindung hergestellt. Warte auf Packet...");
+    //dbg("TCP-Verbindung hergestellt. Warte auf Paket...");
     parse_message(sockfd);
     pthread_exit(NULL);
 }
