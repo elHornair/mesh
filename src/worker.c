@@ -200,24 +200,34 @@ int send_package(package *my_package, int receiver_port) {
 int forward_package(package *my_package) {
     struct node *neighbour_item = malloc(sizeof(struct node));
 
-    dbg("Leite Paket weiter...");
-
-    // TODO: before flooding, first check if we know in what direction to send it already
-
-    // flood network
-    if (1) {// TODO: this will say whether the searched node is in the routing table or not
-
-        // lock neighbours list
-        pthread_mutex_lock(&mutex_neighbours);
-
-        // loop through existing neighbours
-        LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
-            send_package(my_package, neighbour_item->port);
+    // check if we know to what neighbour to forward the package
+    if (my_package->target == 0) {
+        // the package needs to go to the source
+        if (my_router->source_neighbour != 0) {
+            dbg("Leite Paket gezielt weiter");
+            send_package(my_package, my_router->source_neighbour);
+            return 0;
         }
-
-        // unlock neighbours list
-        pthread_mutex_unlock(&mutex_neighbours);
+    } else {
+        // the package needs to go to the goal
+        if (my_router->goal_neighbour != 0) {
+            dbg("Leite Paket gezielt weiter");
+            send_package(my_package, my_router->goal_neighbour);
+            return 0;
+        }
     }
+
+    // If we don't know to what neighbour to forward the package, we flood the network
+    // TODO: we could still be a bit smarter here and not send packages to nodes that are registered in the router
+    dbg("Leite Paket weiter indem ich Netzwerk flute");
+    pthread_mutex_lock(&mutex_neighbours);// lock neighbours list
+
+    // loop through existing neighbours
+    LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
+        send_package(my_package, neighbour_item->port);
+    }
+
+    pthread_mutex_unlock(&mutex_neighbours);// unlock neighbours list
 
     return 0;
 }
