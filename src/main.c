@@ -20,13 +20,11 @@ int role;// the role of this node
 struct router *my_router;// the routing table of this node
 char package_id_blacklist[256];// package ids are hashed so we only blacklist 256 ids at the same time
 
-// TODO: update all h-files
-// TODO: debuggen, warums bei mehreren paketen manchmal failed
 // TODO: nochmals testprogramm auschecken und alles testen
 
-pthread_mutex_t mutex_neighbours;
-pthread_mutex_t mutex_router;
-pthread_mutex_t mutex_blacklist;
+pthread_mutex_t mutex_neighbours = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_router = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_blacklist = PTHREAD_MUTEX_INITIALIZER;
 
 int parse_config(int argc, char *argv[]) {
     int opt;

@@ -209,6 +209,7 @@ int forward_package(package *my_package) {
         pthread_mutex_lock(&mutex_blacklist);// lock id blacklist
 
         if (package_id_blacklist[my_package->id % 256] == my_package->id) {
+            pthread_mutex_unlock(&mutex_blacklist);// unlock id blacklist
             dbg("Dieses Paket habe ich bereits einmal weitergeleitet. Verwerfe es");
             return -1;
         }
