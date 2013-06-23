@@ -5,7 +5,7 @@
 #include<include/worker.h>
 #include<include/util.h>
 
-#define NUM_WORKERS 5
+#define NUM_WORKERS 10
 
 const char ROLE_DEFAULT = 'N';
 const char ROLE_SOURCE = 'Q';
@@ -83,7 +83,10 @@ int main(int argc, char *argv[]) {
     while (1) {
         newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection
-        thread_counter += 1;// TODO: so mache ich im moment glaub einen overflow -> check
+        thread_counter += 1;
+        if (thread_counter >= NUM_WORKERS) {
+            thread_counter = 0;
+        }
     }
 
     return 0;
