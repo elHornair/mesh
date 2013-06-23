@@ -285,7 +285,7 @@ int process_data_package(package *my_package) {
 
         // send ok-package back
         my_package->type = TYPE_OK;
-        send_package(my_package, sender_node->port);// TODO: Eigentlich wollen wir nicht an den sender schicken, sondern an target -> routingtable benutzen
+        send_package(my_package, sender_node->port);
     } else {
         forward_package(my_package);
     }
