@@ -77,6 +77,9 @@ int main(int argc, char *argv[]) {
     // init list of all connected neighbours
     LIST_INIT(&neighbour_head);
 
+    // init blacklist
+    package_id_blacklist[0] = 1;// without this, packages with ID 0 are blacklisted from the beginning
+
     while (1) {
         newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection
