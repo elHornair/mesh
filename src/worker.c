@@ -76,7 +76,7 @@ int add_neighbour(struct node *neighbour_to_add) {
 }
 
 // update the routing table with the information contained in a package
-update_routing_table(package *my_package) {
+void update_routing_table(package *my_package) {
     struct node *sender_node = malloc(sizeof(struct node));
 
     package_message_to_node(my_package, sender_node, 122);

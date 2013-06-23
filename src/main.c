@@ -1,9 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<pthread.h>
+#include<include/util.h>
 #include<include/node.h>
 #include<include/worker.h>
-#include<include/util.h>
 
 #define NUM_WORKERS 10
 
