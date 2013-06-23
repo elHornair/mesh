@@ -21,8 +21,13 @@ struct router *my_router;// the routing table of this node
 char package_id_blacklist[256];// package ids are hashed so we only blacklist 256 ids at the same time
 
 pthread_mutex_t mutex_neighbours = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond_neighbours = PTHREAD_COND_INITIALIZER;
+
 pthread_mutex_t mutex_router = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond_router = PTHREAD_COND_INITIALIZER;
+
 pthread_mutex_t mutex_blacklist = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t cond_blacklist = PTHREAD_COND_INITIALIZER;
 
 int parse_config(int argc, char *argv[]) {
     int opt;
@@ -84,6 +89,14 @@ int main(int argc, char *argv[]) {
             thread_counter = 0;
         }
     }
+
+    // clean up mutexes and conditions
+    pthread_mutex_destroy(&mutex_neighbours);
+    pthread_cond_destroy(&cond_neighbours);
+    pthread_mutex_destroy(&mutex_router);
+    pthread_cond_destroy(&cond_router);
+    pthread_mutex_destroy(&mutex_blacklist);
+    pthread_cond_destroy(&cond_blacklist);
 
     return 0;
 }

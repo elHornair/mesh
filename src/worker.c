@@ -8,19 +8,25 @@
 #include<netdb.h>
 #include<include/util.h>
 
-extern pthread_mutex_t mutex_neighbours;
-extern pthread_mutex_t mutex_router;
-extern pthread_mutex_t mutex_blacklist;
-extern int role;
-extern int port;
-extern struct router *my_router;
-extern char package_id_blacklist[65536];
-
 extern const char ROLE_SOURCE;
 extern const char ROLE_GOAL;
 extern char TYPE_CONTENT;
 extern char TYPE_OK;
 extern char TYPE_NEIGHBOUR;
+
+extern int role;
+extern int port;
+extern struct router *my_router;
+extern char package_id_blacklist[65536];
+
+extern pthread_mutex_t mutex_neighbours;
+extern pthread_cond_t cond_neighbours;
+
+extern pthread_mutex_t mutex_router;
+extern pthread_cond_t cond_router;
+
+extern pthread_mutex_t mutex_blacklist;
+extern pthread_cond_t cond_blacklist;
 
 // checks if a certain node is already registered as a neighbour
 //      returns 1 if my_node is a neighbour
@@ -28,20 +34,22 @@ extern char TYPE_NEIGHBOUR;
 int is_neighbour (struct node *my_node) {
     struct node *neighbour_item = malloc(sizeof(struct node));
 
-    // lock neighbours list
-    pthread_mutex_lock(&mutex_neighbours);
+    // lock neighbours list (wait until resource is unlocked)
+    while (pthread_mutex_lock(&mutex_neighbours) != 0) {
+        pthread_cond_wait(&cond_neighbours, &mutex_neighbours);
+    }
 
     // loop through existing neighbours
     LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
         if (my_node->port == neighbour_item->port) {
-            // unlock neighbours list
-            pthread_mutex_unlock(&mutex_neighbours);
+            pthread_mutex_unlock(&mutex_neighbours);// unlock neighbours list
+            pthread_cond_broadcast(&cond_neighbours);// broadcast freedom of neighbour list
             return 1;
         }
     }
 
-    // unlock neighbours list
-    pthread_mutex_unlock(&mutex_neighbours);
+    pthread_mutex_unlock(&mutex_neighbours);// unlock neighbours list
+    pthread_cond_broadcast(&cond_neighbours);// broadcast freedom of neighbour list
 
     return 0;
 }
@@ -55,9 +63,13 @@ int add_neighbour(struct node *neighbour_to_add) {
     char dbg_message[100];
 
     if (!already_in_list) {
-        pthread_mutex_lock(&mutex_neighbours);// lock neighbours list
+        // lock neighbours list (wait until resource is unlocked)
+        while (pthread_mutex_lock(&mutex_neighbours) != 0) {
+            pthread_cond_wait(&cond_neighbours, &mutex_neighbours);
+        }
         LIST_INSERT_HEAD(&neighbour_head, neighbour_to_add, entries);// add new neighbour
         pthread_mutex_unlock(&mutex_neighbours);// unlock neighbours list
+        pthread_cond_broadcast(&cond_neighbours);// broadcast freedom of neighbour list
 
         sprintf(dbg_message,
                 "Nachbar mit Port %d hinzugefügt",
@@ -81,8 +93,10 @@ void update_routing_table(package *my_package) {
 
     package_message_to_node(my_package, sender_node, 122);
 
-    // lock router
-    pthread_mutex_lock(&mutex_router);
+    // lock router (wait until resource is unlocked)
+    while (pthread_mutex_lock(&mutex_router) != 0) {
+        pthread_cond_wait(&cond_router, &mutex_router);
+    }
 
     // only add routes to known neighbours
     if (is_neighbour(sender_node)) {
@@ -99,8 +113,8 @@ void update_routing_table(package *my_package) {
         }
     }
 
-    // unlock router
-    pthread_mutex_unlock(&mutex_router);
+    pthread_mutex_unlock(&mutex_router);// unlock router
+    pthread_cond_broadcast(&cond_router);// broadcast freedom of router
 }
 
 // process a connection package
@@ -206,10 +220,14 @@ int forward_package(package *my_package) {
     // we make an exception for OK-packages, since they have the same id as their corresponding data package
     if (my_package->type != TYPE_OK) {
 
-        pthread_mutex_lock(&mutex_blacklist);// lock id blacklist
+        // lock id blacklist (wait until resource is unlocked)
+        while (pthread_mutex_lock(&mutex_blacklist) != 0) {
+            pthread_cond_wait(&cond_blacklist, &mutex_blacklist);
+        }
 
         if (package_id_blacklist[my_package->id % 256] == my_package->id) {
             pthread_mutex_unlock(&mutex_blacklist);// unlock id blacklist
+            pthread_cond_broadcast(&cond_blacklist);// broadcast freedom of blacklist
             dbg("Dieses Paket habe ich bereits einmal weitergeleitet. Verwerfe es");
             return -1;
         }
@@ -217,6 +235,7 @@ int forward_package(package *my_package) {
         // we hash the package id by only considering the 8 lowest bits
         package_id_blacklist[my_package->id % 256] = my_package->id;
         pthread_mutex_unlock(&mutex_blacklist);// unlock id blacklist
+        pthread_cond_broadcast(&cond_blacklist);// broadcast freedom of blacklist
     }
 
     // check if we know to what neighbour to forward the package
@@ -238,7 +257,11 @@ int forward_package(package *my_package) {
 
     // If we don't know to what neighbour to forward the package, we flood the network
     dbg("Leite Paket weiter indem ich Netzwerk flute");
-    pthread_mutex_lock(&mutex_neighbours);// lock neighbours list
+
+    // lock neighbours list (wait until resource is unlocked)
+    while (pthread_mutex_lock(&mutex_neighbours) != 0) {
+        pthread_cond_wait(&cond_neighbours, &mutex_neighbours);
+    }
 
     // loop through existing neighbours
     LIST_FOREACH(neighbour_item, &neighbour_head, entries) {
@@ -246,6 +269,7 @@ int forward_package(package *my_package) {
     }
 
     pthread_mutex_unlock(&mutex_neighbours);// unlock neighbours list
+    pthread_cond_broadcast(&cond_neighbours);// broadcast freedom of neighbour list
 
     return 0;
 }
