@@ -18,7 +18,7 @@ const char TYPE_NEIGHBOUR = 'N';
 int port = 3333;// the port this node runs on
 int role;// the role of this node
 struct router *my_router;// the routing table of this node
-char package_id_blacklist[65536];// All possible package ids (2^16 = 65536)
+char package_id_blacklist[256];// package ids are hashed so we only blacklist 256 ids at the same time
 
 // TODO: update all h-files
 

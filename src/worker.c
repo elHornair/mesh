@@ -205,12 +205,16 @@ int forward_package(package *my_package) {
     // make sure we forward a package with a certain id only once
     // we make an exception for OK-packages, since they have the same id as their corresponding data package
     if (my_package->type != TYPE_OK) {
+
         pthread_mutex_lock(&mutex_blacklist);// lock id blacklist
-        if (package_id_blacklist[my_package->id] == 1) {// TODO: make this smarter -> % 256?
+
+        if (package_id_blacklist[my_package->id % 256] == my_package->id) {
             dbg("Dieses Paket habe ich bereits einmal weitergeleitet. Verwerfe es");
             return -1;
         }
-        package_id_blacklist[my_package->id] = 1;
+
+        // we hash the package id by only considering the 8 lowest bits
+        package_id_blacklist[my_package->id % 256] = my_package->id;
         pthread_mutex_unlock(&mutex_blacklist);// unlock id blacklist
     }
 
