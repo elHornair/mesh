@@ -21,6 +21,10 @@ struct router *my_router;// the routing table of this node
 char package_id_blacklist[256];// package ids are hashed so we only blacklist 256 ids at the same time
 
 // TODO: update all h-files
+// TODO: id blacklist kleiner machen -> modulo 255 rechnen
+// TODO: debuggen, warums bei mehreren paketen manchmal failed
+// TODO: nochmals testprogramm auschecken und alles testen
+// TODO: adapt README
 
 pthread_mutex_t mutex_neighbours;
 pthread_mutex_t mutex_router;
@@ -72,14 +76,9 @@ int main(int argc, char *argv[]) {
     }
     dbg("Erstellt");
 
-    // TODO: machen, dass nie versucht wird, zwei verbindungen gleichzeitig aufzumachen auf einem bestimmten port
-
     // init list of all connected neighbours
     LIST_INIT(&neighbour_head);
 
-    // TODO: refactor so it reuses the threads
-    // TODO: create the threads upfront
-    // TODO: müssen die threads überhaupt in einem array sein?
     while (1) {
         newsockfd = wait_for_connection(sockfd);// wait for a new node to connect
         pthread_create(&workers[thread_counter], NULL, worker_init, (void *)newsockfd);// create a new thread for handling this connection
