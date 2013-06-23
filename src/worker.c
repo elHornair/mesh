@@ -260,19 +260,25 @@ int process_data_package(package *my_package) {
     if (my_package->target == 1 && role == ROLE_GOAL ||
         my_package->target == 0 && role == ROLE_SOURCE) {
 
-        int i;
+        int len;
         int message_length = 128;
         char the_message[message_length];
 
-        memcpy(&the_message, &(my_package->message), 122);
+        memcpy(&the_message, &(my_package->message), message_length - 6);
 
         dbg("Nachricht erhalten. Sende OK-Paket");
 
-        // for some reason we need to do a padding on the message, since the testscript seems to eat away some chars on
-        // every output to standard out
+        // we need to do a padding on the message, since the testscript always reads 128 bytes at a time
+        while (strlen(the_message) < message_length) {
+            len = strlen(the_message);
+            the_message[len] = '-';
+            the_message[len + 1] = '\0';
+        }
+
+        // print out the message to standard out
         fprintf(
             stdout,
-            "%s----------------------------------------------------------------------------------------------------------",
+            "%s",
             the_message);
         fflush(stdout);
 
