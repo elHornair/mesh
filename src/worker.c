@@ -252,11 +252,24 @@ int process_data_package(package *my_package) {
 
     package_message_to_node(my_package, sender_node, 122);
 
-    fprintf(stderr, "--------------_Verarbeite nachricht mit id %d\n", my_package->id);
-
     if (my_package->target == 1 && role == ROLE_GOAL ||
         my_package->target == 0 && role == ROLE_SOURCE) {
-        dbg("Nachricht erhalten. Sende OK-Paket");// TODO: write expected message (see test script)
+
+        int i;
+        int message_length = 128;
+        char the_message[message_length];
+
+        memcpy(&the_message, &(my_package->message), 122);
+
+        dbg("Nachricht erhalten. Sende OK-Paket");
+
+        // for some reason we need to do a padding on the message, since the testscript seems to eat away some chars on
+        // every output to standard out
+        fprintf(
+            stdout,
+            "%s----------------------------------------------------------------------------------------------------------",
+            the_message);
+        fflush(stdout);
 
         // the new target is the other end of the network
         if (my_package->target == 1) {
