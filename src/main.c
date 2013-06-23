@@ -21,10 +21,8 @@ struct router *my_router;// the routing table of this node
 char package_id_blacklist[256];// package ids are hashed so we only blacklist 256 ids at the same time
 
 // TODO: update all h-files
-// TODO: id blacklist kleiner machen -> modulo 255 rechnen
 // TODO: debuggen, warums bei mehreren paketen manchmal failed
 // TODO: nochmals testprogramm auschecken und alles testen
-// TODO: adapt README
 
 pthread_mutex_t mutex_neighbours;
 pthread_mutex_t mutex_router;
