@@ -237,7 +237,6 @@ int forward_package(package *my_package) {
     }
 
     // If we don't know to what neighbour to forward the package, we flood the network
-    // TODO: we could still be a bit smarter here and not send packages to nodes that are registered in the router
     dbg("Leite Paket weiter indem ich Netzwerk flute");
     pthread_mutex_lock(&mutex_neighbours);// lock neighbours list
 
